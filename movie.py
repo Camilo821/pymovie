@@ -2,8 +2,8 @@ from bs4 import BeautifulSoup
 from deep_translator import GoogleTranslator
 import requests
 import os
-IMDB_LINK_FIND = 'https://www.imdb.com/find?q='
-IMDB_LINK = 'https://www.imdb.com'
+TMDB_LINK_FIND = 'https://www.themoviedb.org/search?query='
+TMDB_LINK = 'https://www.themoviedb.org'
 class Movie:
     name:str
     #poster_link:str
@@ -16,23 +16,39 @@ class Movie:
         self.name = name
     
     def get_movie(self):
-        self.url = IMDB_LINK_FIND + self.name
+        self.url = TMDB_LINK_FIND + self.name
         self.__page = requests.get(self.url)
         self.__bs = BeautifulSoup(self.__page.content, 'html.parser')
-        self.__msg = self.__bs.find('td', class_='result_text').find_all('a')
-        for i in self.__msg:
-            self.movie_name = i.text
-            self.movie_imdb_link = IMDB_LINK + i['href']
+        self.__msg = self.__bs.find('div', class_='results').find_all('div', class_="title")
+        self.__msg = [x.find('a') for x in self.__msg]
+        for i in range(0, len(self.__msg)):
+            print(f"{i}. {self.__msg[i].text}")
+            # self.movie_name = i.text
+            # self.movie_imdb_link = TMDB_LINK + i['href']
+        self.__selection = int(input("Ingrese el numero de la película que desea: "))
+        self.movie_name = self.__msg[self.__selection].text
+        self.movie_imdb_link = TMDB_LINK + self.__msg[self.__selection]['href']
 
     def get_info(self):
         self.__page = requests.get(self.movie_imdb_link)
         self.__bs = BeautifulSoup(self.__page.content, 'html.parser')
-        self.en_sinopsis = self.__bs.find_all('span', class_='sc-16ede01-2 gXUyNh')
+        self.en_sinopsis = self.__bs.find_all('div', class_='overview')
         self.__traductor = GoogleTranslator(source='en', target='es')
         self.es_sinopsis = str([self.__traductor.translate(i.text) for i in self.en_sinopsis]).replace('[', '').replace(']', '').replace("'", '')
-        self.__rate_html = self.__bs.find_all('span', class_='sc-7ab21ed2-1 jGRxWM', limit=1)
-        self.rate = float(str([i.text for i in self.__rate_html]).replace('[', '').replace(']', '').replace("'", ''))
-        self.__director = self.__bs.find_all('a', class_="ipc-metadata-list-item__list-content-item ipc-metadata-list-item__list-content-item--link")
+        self.rate = self.__bs.find('div', class_='user_score_chart')['data-percent']
+        # self.rate = str([i.text for i in self.__rate_html]).replace('[', '').replace(']', '').replace("'", '')
+        self.__director = self.__bs.find('li', class_="profile").find_all('a')
         self.director = str([i.text for i in self.__director]).replace('[', '').replace(']', '').replace("'", '')
+        self.__reparto = self.__bs.find('ol', class_="scroller").find_all('p')
+        self.__reparto.pop(-1)
+        self.actor = []
+        self.papel = []
+        for i in range(0, len(self.__reparto)):
+            if i%2==0:
+                self.actor.append(self.__reparto[i].text)
+            else:
+                self.papel.append(self.__reparto[i].text)
 
+        for i in range(0, len(self.actor)):
+            print(f"{self.actor[i]} - {self.papel[i]}")
 
