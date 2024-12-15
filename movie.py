@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 from deep_translator import GoogleTranslator
 import requests
 import os
+
 TMDB_LINK_FIND = 'https://www.themoviedb.org/search?query='
 TMDB_LINK = 'https://www.themoviedb.org'
 class Movie:
@@ -21,16 +22,16 @@ class Movie:
         self.__bs = BeautifulSoup(self.__page.content, 'html.parser')
         self.__msg = self.__bs.find('div', class_='results').find_all('div', class_="title")
         self.__msg = [x.find('a') for x in self.__msg]
-        for i in range(0, len(self.__msg)):
-            print(f"{i}. {self.__msg[i].text}")
+        self.movies = self.__msg
+        # for i in range(0, len(self.__msg)):
+        #     print(f"{i}. {self.__msg[i].text}")
             # self.movie_name = i.text
             # self.movie_imdb_link = TMDB_LINK + i['href']
-        self.__selection = int(input("Ingrese el numero de la película que desea: "))
-        self.movie_name = self.__msg[self.__selection].text
-        self.movie_imdb_link = TMDB_LINK + self.__msg[self.__selection]['href']
-
-    def get_info(self):
-        self.__page = requests.get(self.movie_imdb_link)
+        # self.__selection = int(input("Ingrese el numero de la película que desea: "))
+        # self.movie_name = self.__msg[self.__selection].text
+        # self.movie_imdb_link = TMDB_LINK + self.__msg[self.__selection]['href']
+    def get_info(self, movie_link):
+        self.__page = requests.get(movie_link)
         self.__bs = BeautifulSoup(self.__page.content, 'html.parser')
         self.en_sinopsis = self.__bs.find_all('div', class_='overview')
         self.__traductor = GoogleTranslator(source='en', target='es')
@@ -48,7 +49,13 @@ class Movie:
                 self.actor.append(self.__reparto[i].text)
             else:
                 self.papel.append(self.__reparto[i].text)
-
-        for i in range(0, len(self.actor)):
-            print(f"{self.actor[i]} - {self.papel[i]}")
+        self.image_link = self.__bs.find('img', class_="poster")
+        self.image_link = self.image_link['src']
+        self.certification = self.__bs.find('span', class_="certification").content
+        self.release = self.__bs.find('span', class_="release").content
+        self.genres = self.__bs.find('span', class_="genres").find_all('a')
+        self.genres = [x.content for x in self.genres]
+        self.runtime = self.__bs.find('span', class_="runtime").content
+        # for i in range(0, len(self.actor)):
+        #     print(f"{self.actor[i]} - {self.papel[i]}")
 
