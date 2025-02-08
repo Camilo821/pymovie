@@ -3,6 +3,8 @@ from movie import TMDB_LINK, TMDB_LINK_FIND
 import tkinter as tk
 import customtkinter as ctk
 import requests
+import pandas as pd
+import numpy as np
 from io import BytesIO
 from PIL import Image, ImageTk
 ctk.set_appearance_mode("dark")
@@ -10,15 +12,19 @@ window = ctk.CTk()
 window.title("Pymovie")
 window.geometry("850x500")
 tittle = ctk.CTkLabel(window, text="Bienvenido a Pymovie", font=("Arial", 14))
+def save_movie(movie, own_rate):
+    df = pd.read_excel('./movies.xlsx')
+    df = pd.concat([df, pd.DataFrame({'name': [movie.name], 'genres': [movie.genres], 'director': [movie.director], 'rate_tmdb': [movie.rate], 'own_rate': [own_rate], 'release': [pd.to_datetime(movie.release)]})])
+    print(df)
 def image_from_url(url):
-        response = requests.get(url, timeout=10)  # Descargar la imagen
-        if response.status_code == 200:  # Si la descarga fue exitosa
-            image_data = BytesIO(response.content)  # Leer la imagen en memoria
-            image = Image.open(image_data)  # Abrir la imagen con Pillow
-            return ImageTk.PhotoImage(image)  # Convertirla para usarla en tkinter
-        else:
-            print("No se pudo descargar la imagen")
-            return None
+    response = requests.get(url, timeout=10)  # Descargar la imagen
+    if response.status_code == 200:  # Si la descarga fue exitosa
+        image_data = BytesIO(response.content)  # Leer la imagen en memoria
+        image = Image.open(image_data)  # Abrir la imagen con Pillow
+        return ImageTk.PhotoImage(image)  # Convertirla para usarla en tkinter
+    else:
+        print("No se pudo descargar la imagen")
+        return None
 #ttk.Label(window, text="Ingresa el nombre de la película que quieres buscar: ").grid(column=0, row=1, padx=10, pady=5, sticky="w")
 search = ctk.CTkEntry(window, placeholder_text="Ingresa el nombre de la película", width=250)
 search.grid(column=0, row=1, padx=10, pady=5)
@@ -34,6 +40,12 @@ def search_movie(selection_entry, movies, movie):
     movie_window.geometry("700x300")
     rate_label = ctk.CTkLabel(movie_window, text=f"Al {movie.rate}% de las personas les gustó")
     rate_label.grid(column=0, row=1, padx=10, pady=5)
+    genres_label = ctk.CTkLabel(movie_window, text=f"Los generos de la película son {str(movie.genres).replace('[', '').replace(']', '').replace("'", '')}")
+    genres_label.grid(column=0, row=2, padx=10, pady=5)
+    director_label = ctk.CTkLabel(movie_window, text=f"El director es {movie.director}")
+    director_label.grid(column=0, row=3, padx=10, pady=5)
+    release_label = ctk.CTkLabel(movie_window, text=f"Se lanzó en el año {movie.release}")
+    release_label.grid(column=0, row=4, padx=10, pady=5)
     print(movie.image_link)
     response = requests.get(movie.image_link, timeout=10)
     image_data = BytesIO(response.content)
@@ -47,9 +59,13 @@ def search_movie(selection_entry, movies, movie):
     sinopsis_label = ctk.CTkTextbox(movie_window, wrap="word", height=150, width=300)  # wrap="word" asegura que el texto no corte palabras
     sinopsis_label._textbox.insert(
     "1.0",
-    movie.es_sinopsis,)
+    movie.es_sinopsis)
     sinopsis_label.configure(state="disabled")
     sinopsis_label.grid(column=1, row=0, padx=10, pady=5)
+    own_rate_entry = ctk.CTkEntry(movie_window, placeholder_text="Ingresa tu calificación del 1 al 10")
+    own_rate_entry.grid(column=1, row=1, padx=10, pady=5)
+    own_rate_button = ctk.CTkButton(movie_window, text="Guardar", command=lambda : save_movie(movie, own_rate=own_rate_entry.get()))
+    own_rate_button.grid(column=1, row=2, padx=10, pady=5)
 def search_info():
     search_text = search.get()
     movie = Movie(search_text)
