@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from deep_translator import GoogleTranslator
 import requests
 import os
-
+import re
 TMDB_LINK_FIND = 'https://www.themoviedb.org/search?query='
 TMDB_LINK = 'https://www.themoviedb.org'
 class Movie:
@@ -53,6 +53,7 @@ class Movie:
         self.image_link = self.image_link['src']
         self.certification = self.__bs.find('span', class_="certification").content
         self.release = self.__bs.find('span', class_="release").get_text().replace(' (US)', '')
+        self.release = re.sub(r'\([^)]*\)', '', self.release)
         self.genres = self.__bs.find('span', class_="genres").find_all('a')
         self.genres = [self.__traductor.translate(x.get_text()) for x in self.genres]
         self.runtime = self.__bs.find('span', class_="runtime")

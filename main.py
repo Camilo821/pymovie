@@ -5,16 +5,31 @@ import customtkinter as ctk
 import requests
 import pandas as pd
 import numpy as np
+import os
 from io import BytesIO
 from PIL import Image, ImageTk
 ctk.set_appearance_mode("dark")
+file_path = './movies.csv'
 window = ctk.CTk()
 window.title("Pymovie")
 window.geometry("850x500")
 tittle = ctk.CTkLabel(window, text="Bienvenido a Pymovie", font=("Arial", 14))
 def save_movie(movie, own_rate):
-    df = pd.read_excel('./movies.xlsx')
+    if os.path.exists(file_path):
+        df = pd.read_csv(file_path)
+    else:
+        df = pd.DataFrame(columns=['name', 'genres', 'director', 'rate_tmdb', 'own_rate', 'release'])
+    
     df = pd.concat([df, pd.DataFrame({'name': [movie.name], 'genres': [movie.genres], 'director': [movie.director], 'rate_tmdb': [movie.rate], 'own_rate': [own_rate], 'release': [pd.to_datetime(movie.release)]})])
+    df.to_csv('movies.csv', index=False)
+    # writer = pd.ExcelWriter('movies.xlsx')
+    # df.to_excel(writer, sheet_name='movies', engine="openpyxl", index=False)
+    # writer.save()
+    print(df)
+def remove_db():
+    df = pd.read_csv('./movies.csv')
+    df.drop(df.index, inplace=True)
+    df.to_csv('movies.csv', index=False)
     print(df)
 def image_from_url(url):
     response = requests.get(url, timeout=10)  # Descargar la imagen
@@ -82,6 +97,8 @@ def search_info():
 
 search_button = ctk.CTkButton(window, text="Enviar", command=search_info)
 search_button.grid(column=0, row=2, columnspan=2, pady=10)
+reset_button = ctk.CTkButton(window, text="Reiniciar Excel", command=remove_db)
+reset_button.grid(column=1, row=2, columnspan=2, pady=10)
 
 
 
