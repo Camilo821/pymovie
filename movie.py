@@ -52,10 +52,16 @@ class Movie:
         self.image_link = self.__bs.find('img', class_="poster")
         self.image_link = self.image_link['src']
         self.certification = self.__bs.find('span', class_="certification").content
-        self.release = self.__bs.find('span', class_="release").get_text().replace(' (US)', '')
-        self.release = re.sub(r'\([^)]*\)', '', self.release)
+        self.release = self.__bs.find('span', class_="release")
+        if self.release:
+            self.release = self.release.get_text().replace(' (US)', '')
+            self.release = re.sub(r'\([^)]*\)', '', self.release)
+            self.type = 'pelicula'
+        else:
+            self.release = self.__bs.find('span', class_="release_date").get_text().replace('(', '').replace(')', '')
+            self.type = 'serie'
         self.genres = self.__bs.find('span', class_="genres").find_all('a')
-        self.genres = [self.__traductor.translate(x.get_text()) for x in self.genres]
+        self.genres = [self.__traductor.translate(x.get_text()).lower().replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u') for x in self.genres]
         self.runtime = self.__bs.find('span', class_="runtime")
         # for i in range(0, len(self.actor)):
         #     print(f"{self.actor[i]} - {self.papel[i]}")

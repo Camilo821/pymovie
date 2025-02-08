@@ -1,1 +1,5 @@
-name,genres,director,rate_tmdb,own_rate,release
+name,type,genres,director,rate_tmdb,own_rate,release
+Sherlock,serie,"['delito', 'drama', 'misterio']",Mark Gatiss,85,10,2010-01-01
+dark,serie,"['delito', 'drama', 'ciencia ficcion y fantasia', 'misterio']",Baran bo Odar,84,10,2017-01-01 00:00:00
+the big bang theory,serie,['comedia'],Chuck Lorre,79,9,2007-01-01 00:00:00
+avengers,pelicula,"['aventura', 'accion', 'ciencia ficcion']",Keith Giffen,82,9,2018-04-25 00:00:00

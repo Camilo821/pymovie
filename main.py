@@ -18,13 +18,10 @@ def save_movie(movie, own_rate):
     if os.path.exists(file_path):
         df = pd.read_csv(file_path)
     else:
-        df = pd.DataFrame(columns=['name', 'genres', 'director', 'rate_tmdb', 'own_rate', 'release'])
+        df = pd.DataFrame(columns=['name', 'type', 'genres', 'director', 'rate_tmdb', 'own_rate', 'release'])
     
-    df = pd.concat([df, pd.DataFrame({'name': [movie.name], 'genres': [movie.genres], 'director': [movie.director], 'rate_tmdb': [movie.rate], 'own_rate': [own_rate], 'release': [pd.to_datetime(movie.release)]})])
+    df = pd.concat([df, pd.DataFrame({'name': [movie.name], 'type': [movie.type], 'genres': [movie.genres], 'director': [movie.director], 'rate_tmdb': [movie.rate], 'own_rate': [own_rate], 'release': [pd.to_datetime(movie.release)]})])
     df.to_csv('movies.csv', index=False)
-    # writer = pd.ExcelWriter('movies.xlsx')
-    # df.to_excel(writer, sheet_name='movies', engine="openpyxl", index=False)
-    # writer.save()
     print(df)
 def remove_db():
     df = pd.read_csv('./movies.csv')
@@ -51,7 +48,7 @@ def search_movie(selection_entry, movies, movie):
     selection = int(selection_entry.get())
     movie.get_info(TMDB_LINK + movies[selection]['href'])
     movie_window = ctk.CTkToplevel(window)
-    movie_window.title(movies[selection].text)
+    movie_window.title(f"{movies[selection].text} ({movie.type})")
     movie_window.geometry("700x300")
     rate_label = ctk.CTkLabel(movie_window, text=f"Al {movie.rate}% de las personas les gustó")
     rate_label.grid(column=0, row=1, padx=10, pady=5)
